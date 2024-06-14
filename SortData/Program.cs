@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SortData
 {
@@ -11,98 +8,44 @@ namespace SortData
     {
         static void Main(string[] args)
         {
-            string filePath;
-
-            Console.WriteLine("Введите путь к файлу:");
-            filePath = Console.ReadLine();
-            if (string.IsNullOrEmpty(filePath))
+            if (args.Length != 1)
             {
-                Console.WriteLine("Путь к файлу не может быть пустым.");
-                Console.ReadLine();
-                return;
+                Console.WriteLine("Вы используете SortData <testdata.txt>");
+                Environment.Exit(-1);
             }
 
-            List<string> validData = new List<string>();
-            List<string> invalidData = new List<string>();
+            string inputFilepath = args[0];
 
             try
             {
-                using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
-                {
-                    string dataBlock = "";
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        if (string.IsNullOrWhiteSpace(line))
-                        {
-                            if (!string.IsNullOrEmpty(dataBlock))
-                            {
-                                validData.Add(dataBlock);
-                                dataBlock = "";
-                            }
-                        }
-                        else
-                        {
-                            dataBlock += line + "\n";
-                        }
-                    }
+                List<Object> databaseObject = FileProcessing.ReadObject(inputFilepath);
+                List<Object> validObjects = new List<Object>();
+                List<Object> invalidObjects = new List<Object>();
 
-                    // Обработка последнего блока, если он не пустой
-                    if (!string.IsNullOrEmpty(dataBlock))
+                foreach (var dbObject in databaseObject)
+                {
+                    if (Validator.IsValid(dbObject))
                     {
-                        validData.Add(dataBlock);
+                        validObjects.Add(dbObject);
+                    }
+                    else
+                    {
+                        invalidObjects.Add(dbObject);
                     }
                 }
 
-                Console.WriteLine("Корректные данные:");
-                foreach (var data in validData)
-                {
-                    Console.WriteLine(data);
-                }
+                FileProcessing.SaveInvalidData(invalidObjects);
+                FileProcessing.SaveValidData(validObjects, 5);
 
-                SaveData("bad_data.txt", invalidData);
-
-                if (validData.Count == 0)
-                {
-                    Console.WriteLine("Нет корректных данных для сохранения.");
-                }
-                else
-                {
-                    int partCount = 5;
-                    int partSize = (int)Math.Ceiling(validData.Count / (double)partCount);
-                    for (int i = 0; i < partCount; i++)
-                    {
-                        int startIndex = i * partSize;
-                        int endIndex = Math.Min(startIndex + partSize, validData.Count);
-                        if (startIndex < validData.Count)
-                        {
-                            var partData = validData.GetRange(startIndex, endIndex - startIndex);
-                            SaveData($"base_{i + 1}.txt", partData);
-                        }
-                    }
-                }
+                Console.WriteLine("Обработка завершена успешно.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при обработке файла: {ex.Message}");
-                Console.ReadLine();
-                return;
+                Console.WriteLine($"Ошибка: {ex.Message}");
+                Environment.Exit(-1);
             }
-
-            Console.WriteLine("Обработка завершена.");
+            Console.WriteLine("Нажмите кнопку, чтобы выйти...");
             Console.ReadLine();
-        }
-
-        static void SaveData(string fileName, List<string> data)
-        {
-            using (StreamWriter sw = new StreamWriter(fileName, false, Encoding.UTF8))
-            {
-                foreach (string dataBlock in data)
-                {
-                    sw.WriteLine(dataBlock);
-                    sw.WriteLine();
-                }
-            }
         }
     }
 }

@@ -9,11 +9,12 @@ namespace SortData
     {
         public static List<Object> ReadObject (string filepath)
         {
-            List<Object> databaseobject = new List<Object> ();
+            List<Object> databaseobject = new List<Object>();
             Object currentObject = null;
             foreach (var line in File.ReadLines (filepath))
             {
                 Console.WriteLine ($"Проверка строки: '{line}'");
+
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     if (currentObject != null)
@@ -36,6 +37,19 @@ namespace SortData
                         currentObject.Connect = line.Substring(8);
                     }
                 }
+                else if (line.StartsWith("ID="))
+                {
+                    if (currentObject != null)
+                    {
+                        currentObject.ID=line.Substring(3);
+                    }
+                }
+
+                else if (line.StartsWith("External="))
+                {
+
+                }
+
                 else
                 {
                     throw new FormatException("Недопустимый формат данных");

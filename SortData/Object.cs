@@ -10,5 +10,6 @@ namespace SortData
     {
         public string Title { get; set; }
         public string Connect { get; set; }
+        public string ID { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SortData
@@ -11,11 +12,18 @@ namespace SortData
             {
                 return false;
             }
+
+            if (string.IsNullOrEmpty(Oobject.ID) || !IsValidID(Oobject.ID))
+            {
+                return false;
+            }
+
             if (Oobject.Connect.StartsWith("File="))
             {
                 string filePath = Oobject.Connect.Substring(5).Trim('"');
                 return IsValidFilePath(filePath);
             }
+
             else if (Oobject.Connect.StartsWith("Srvr="))
             {
                 string[] parts = Oobject.Connect.Substring(5).Split(';');
@@ -23,6 +31,7 @@ namespace SortData
                 string refPart = parts.FirstOrDefault(p => p.StartsWith("Ref="));
                 return !string.IsNullOrEmpty(hostPart) && !string.IsNullOrEmpty(refPart);
             }
+
             return false;
         }
 
@@ -30,6 +39,11 @@ namespace SortData
         {
             string pattern = @"^(?:[a-zA-Z]:|\\\\[a-zA-Z0-9_.$-]+\\[a-zA-Z0-9_.$-]+)\\(?:[a-zA-Z0-9(){}\[\]!@#%&+=._-]+\\)*[a-zA-Z0-9(){}\[\]!@#%&+=._-]*$";
             return Regex.IsMatch(path, pattern);
+        }
+
+        private static bool IsValidID(string id)
+        {
+            return Guid.TryParse(id, out _);
         }
     }
 }
